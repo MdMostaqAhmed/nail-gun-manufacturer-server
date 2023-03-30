@@ -34,6 +34,21 @@ async function run() {
             res.send(product);
         })
 
+        //Add a Order
+        app.post("/orders", async (req, res) => {
+            const order = req.body;
+            const query = {
+                name: order.name,
+                userEmail: order.userEmail,
+            };
+            const exists = await ordersCollection.findOne(query);
+            if (exists) {
+                return res.send({ success: false, order: exists });
+            }
+            const result = await ordersCollection.insertOne(order);
+            return res.send({ success: true, result });
+        });
+
     } finally {
 
     }

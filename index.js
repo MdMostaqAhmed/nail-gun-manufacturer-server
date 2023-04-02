@@ -124,6 +124,31 @@ async function run() {
             res.send(orders);
         });
 
+        //Get All the orders for a Specific User
+        app.get("/order", verifyJWT, async (req, res) => {
+            //Requested Email
+            const userEmail = req.query.userEmail;
+            console.log(userEmail);
+            // const authorization = req.headers.authorization;
+            // console.log(authorization);
+            // Give the information's to the Exact(Right) user,Dont give other Users Info
+            const decodedEmail = req.decoded.email;
+            if (userEmail === decodedEmail) {
+                const query = { userEmail: userEmail };
+                const orders = await ordersCollection.find(query).toArray();
+                res.send(orders);
+            } else {
+                return res
+                    .status(403)
+                    .send({ message: "Forbidden Access! you aren't the right user" });
+            }
+        });
+
+
+
+
+
+
     } finally {
 
     }

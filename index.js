@@ -145,7 +145,26 @@ async function run() {
         });
 
 
-
+        //Check Whether the user Was Previously logged in or Not
+        app.put("/user/:email", async (req, res) => {
+            const email = req.params.email;
+            const user = req.body;
+            const filter = { email: email };
+            //If the user is not existed it will add
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: user,
+            };
+            const result = await usersCollection.updateOne(
+                filter,
+                updateDoc,
+                options
+            );
+            const token = jwt.sign({ email: email }, process.env.MY_ACCESS_TOKEN, {
+                expiresIn: "15d",
+            });
+            res.send({ result, token });
+        });
 
 
 

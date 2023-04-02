@@ -39,6 +39,7 @@ async function run() {
         await client.connect();
         const productsCollection = client.db('manufacturer').collection('products');
         const usersCollection = client.db("manufacturer").collection("users");
+        const ordersCollection = client.db("manufacturer").collection("orders");
 
         //Check Whether the user Was Previously logged in or Not
         app.put("/user/:email", async (req, res) => {
@@ -96,10 +97,23 @@ async function run() {
         app.get("/admin/:email", async (req, res) => {
             const email = req.params.email;
             const user = await usersCollection.findOne({ email: email });
-            const isAdmin = user.role === "admin";
-            console.log("asas")
-
+            const isAdmin = user.role == "admin";
             res.send({ admin: isAdmin });
+        });
+
+        //Add a Order
+        app.post("/orders", async (req, res) => {
+            const order = req.body;
+            const query = {
+                name: order.name,
+                userEmail: order.userEmail,
+            };
+            const exists = await ordersCollection.findOne(query);
+            if (exists) {
+                return res.send({ success: false, order: exists });
+            }
+            const result = await ordersCollection.insertOne(order);
+            return res.send({ success: true, result });
         });
 
     } finally {

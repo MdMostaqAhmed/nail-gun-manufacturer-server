@@ -116,6 +116,14 @@ async function run() {
             return res.send({ success: true, result });
         });
 
+        //Get All Orders From DB
+        app.get("/orders", async (req, res) => {
+            const query = {};
+            const cursor = ordersCollection.find(query);
+            const orders = await cursor.toArray();
+            res.send(orders);
+        });
+
     } finally {
 
     }

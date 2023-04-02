@@ -8,6 +8,7 @@ app.use(cors());
 app.use(express.json());
 
 require('dotenv').config();
+const jwt = require("jsonwebtoken");
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.ykgatkn.mongodb.net/?retryWrites=true&w=majority`;
@@ -36,7 +37,29 @@ const verifyJWT = (req, res, next) => {
 async function run() {
     try {
         await client.connect();
-        const productsCollection = client.db('manufacturer').collection('products')
+        const productsCollection = client.db('manufacturer').collection('products');
+        const usersCollection = client.db("manufacturer").collection("users");
+
+        //Check Whether the user Was Previously logged in or Not
+        app.put("/user/:email", async (req, res) => {
+            const email = req.params.email;
+            const user = req.body;
+            const filter = { email: email };
+            //If the user is not existed it will add
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: user,
+            };
+            const result = await usersCollection.updateOne(
+                filter,
+                updateDoc,
+                options
+            );
+            const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN, {
+                expiresIn: "15d",
+            });
+            res.send({ result, token });
+        });
 
         //Get All Products
         app.get('/products', async (req, res) => {
@@ -67,6 +90,16 @@ async function run() {
             }
             const result = await ordersCollection.insertOne(order);
             return res.send({ success: true, result });
+        });
+
+        //Check a User Adminability
+        app.get("/admin/:email", async (req, res) => {
+            const email = req.params.email;
+            const user = await usersCollection.findOne({ email: email });
+            const isAdmin = user.role === "admin";
+            console.log("asas")
+
+            res.send({ admin: isAdmin });
         });
 
     } finally {

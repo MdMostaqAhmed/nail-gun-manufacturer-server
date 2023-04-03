@@ -41,6 +41,20 @@ async function run() {
         const usersCollection = client.db("manufacturer").collection("users");
         const ordersCollection = client.db("manufacturer").collection("orders");
 
+        //Verify Admin
+        const verifyAdmin = async (req, res, next) => {
+            //Requester who want to Make another User an Admin
+            const requester = req.decoded.email;
+            const requesterAccount = await usersCollection.findOne({
+                email: requester,
+            });
+            if (requesterAccount.role === "admin") {
+                next();
+            } else {
+                res.status(403).send({ message: "Forbidden,You dont have the power" });
+            }
+        };
+
         //Check Whether the user Was Previously logged in or Not
         app.put("/user/:email", async (req, res) => {
             const email = req.params.email;
@@ -91,6 +105,27 @@ async function run() {
             }
             const result = await ordersCollection.insertOne(order);
             return res.send({ success: true, result });
+        });
+
+        //Make a specific user to Admin
+        app.put("/user/admin/:email", verifyJWT, async (req, res) => {
+            //The user Whom want to make admin
+            const email = req.params.email;
+            //Requester who want to Make another User an Admin
+            const requester = req.decoded.email;
+            const requesterAccount = await usersCollection.findOne({
+                email: requester,
+            });
+            if (requesterAccount.role === "admin") {
+                const filter = { email: email };
+                const updateDoc = {
+                    $set: { role: "admin" },
+                };
+                const result = await usersCollection.updateOne(filter, updateDoc);
+                res.send(result);
+            } else {
+                res.status(403).send({ message: "forbidden,You dont have the power" });
+            }
         });
 
         //Check a User Adminability
@@ -144,6 +179,12 @@ async function run() {
             }
         });
 
+        //get all users
+        app.get("/user", async (req, res) => {
+            const users = await usersCollection.find().toArray();
+            res.send(users);
+        });
+
 
         //Check Whether the user Was Previously logged in or Not
         app.put("/user/:email", async (req, res) => {
@@ -164,6 +205,21 @@ async function run() {
                 expiresIn: "15d",
             });
             res.send({ result, token });
+        });
+
+        //Update status after shipment
+        app.patch("/ship/:id", verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const payment = req.body;
+            const filter = { _id: ObjectId(id) };
+            const updatedDoc = {
+                $set: {
+                    status: payment.status,
+                },
+            };
+            const result = await paymentCollection.insertOne(payment);
+            const updatedOrder = await ordersCollection.updateOne(filter, updatedDoc);
+            res.send(updatedDoc);
         });
 
 

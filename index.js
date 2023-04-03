@@ -92,6 +92,15 @@ async function run() {
             res.send(product);
         })
 
+        //Add a product
+        app.post("/products", verifyJWT, verifyAdmin, async (req, res) => {
+            const product = req.body;
+            const result = await productsCollection.insertOne(product);
+            res.send(result);
+        });
+
+
+
         //Add a Order
         app.post("/orders", async (req, res) => {
             const order = req.body;
@@ -188,7 +197,7 @@ async function run() {
         //Delete a User from User Collection
         app.delete("/users/:id", verifyJWT, verifyAdmin, async (req, res) => {
             const id = req.params.id;
-            const filter = { _id: ObjectId(id) };
+            const filter = { _id: new ObjectId(id) };
             const restUsers = await usersCollection.deleteOne(filter);
             res.send(restUsers);
         });
@@ -219,7 +228,7 @@ async function run() {
         app.patch("/ship/:id", verifyJWT, async (req, res) => {
             const id = req.params.id;
             const payment = req.body;
-            const filter = { _id: ObjectId(id) };
+            const filter = { _id: new ObjectId(id) };
             const updatedDoc = {
                 $set: {
                     status: payment.status,

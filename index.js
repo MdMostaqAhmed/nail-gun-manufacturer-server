@@ -185,6 +185,14 @@ async function run() {
             res.send(users);
         });
 
+        //Delete a User from User Collection
+        app.delete("/users/:id", verifyJWT, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const restUsers = await usersCollection.deleteOne(filter);
+            res.send(restUsers);
+        });
+
 
         //Check Whether the user Was Previously logged in or Not
         app.put("/user/:email", async (req, res) => {

@@ -132,6 +132,14 @@ async function run() {
             }
         });
 
+        //Get a Specific Product Info For Payment
+        app.get("/orders/:id", verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const order = await ordersCollection.findOne(query);
+            res.send(order);
+        });
+
         //Make a specific user to Admin
         app.put("/user/admin/:email", verifyJWT, async (req, res) => {
             //The user Whom want to make admin

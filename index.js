@@ -116,6 +116,22 @@ async function run() {
             return res.send({ success: true, result });
         });
 
+        //Get All the orders for a Specific User
+        app.get("/order", verifyJWT, async (req, res) => {
+            const userEmail = req.query.userEmail;
+            console.log(userEmail);
+            const decodedEmail = req.decoded.email;
+            if (userEmail === decodedEmail) {
+                const query = { userEmail: userEmail };
+                const orders = await ordersCollection.find(query).toArray();
+                res.send(orders);
+            } else {
+                return res
+                    .status(403)
+                    .send({ message: "Forbidden Access! you aren't the right user" });
+            }
+        });
+
         //Make a specific user to Admin
         app.put("/user/admin/:email", verifyJWT, async (req, res) => {
             //The user Whom want to make admin

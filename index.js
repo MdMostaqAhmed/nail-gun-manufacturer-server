@@ -274,6 +274,22 @@ async function run() {
             });
         });
 
+        // Update Payment Status after Payment
+        app.patch("/orders/:id", verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const payment = req.body;
+            const filter = { _id: ObjectId(id) };
+            const updatedDoc = {
+                $set: {
+                    payment: "paid",
+                    transactionId: payment.transactionId,
+                },
+            };
+            const result = await paymentCollection.insertOne(payment);
+            const updatedOrder = await ordersCollection.updateOne(filter, updatedDoc);
+            res.send(updatedDoc);
+        });
+
 
 
     } finally {

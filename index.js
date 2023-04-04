@@ -292,6 +292,16 @@ async function run() {
 
 
 
+        //Delete a order from Db
+        app.delete("/orders/:id", verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const restOrders = await ordersCollection.deleteOne(filter);
+            res.send(restOrders);
+        });
+
+
+
     } finally {
 
     }

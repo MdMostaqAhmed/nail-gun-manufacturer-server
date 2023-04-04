@@ -43,6 +43,7 @@ async function run() {
         const usersCollection = client.db("manufacturer").collection("users");
         const ordersCollection = client.db("manufacturer").collection("orders");
         const paymentCollection = client.db("manufacturer").collection("payment");
+        const reviewsCollection = client.db("manufacturer").collection("reviews");
 
         //Verify Admin
         const verifyAdmin = async (req, res, next) => {
@@ -305,6 +306,14 @@ async function run() {
             const review = req.body;
             const result = await reviewsCollection.insertOne(review);
             return res.send(result);
+        });
+
+        //Get All Reviews From DB
+        app.get("/reviews", async (req, res) => {
+            const query = {};
+            const cursor = reviewsCollection.find(query);
+            const reviews = await cursor.toArray();
+            res.send(reviews);
         });
 
 

@@ -295,11 +295,17 @@ async function run() {
         //Delete a order from Db
         app.delete("/orders/:id", verifyJWT, async (req, res) => {
             const id = req.params.id;
-            const filter = { _id: ObjectId(id) };
+            const filter = { _id: new ObjectId(id) };
             const restOrders = await ordersCollection.deleteOne(filter);
             res.send(restOrders);
         });
 
+        //Add a Review to DB
+        app.post("/reviews", async (req, res) => {
+            const review = req.body;
+            const result = await reviewsCollection.insertOne(review);
+            return res.send(result);
+        });
 
 
     } finally {

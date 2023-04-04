@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const port = process.env.PORT || 5000;
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 
 const cors = require('cors');
@@ -40,6 +41,7 @@ async function run() {
         const productsCollection = client.db('manufacturer').collection('products');
         const usersCollection = client.db("manufacturer").collection("users");
         const ordersCollection = client.db("manufacturer").collection("orders");
+        const paymentCollection = client.db("manufacturer").collection("payment");
 
         //Verify Admin
         const verifyAdmin = async (req, res, next) => {
@@ -135,10 +137,12 @@ async function run() {
         //Get a Specific Product Info For Payment
         app.get("/orders/:id", verifyJWT, async (req, res) => {
             const id = req.params.id;
-            const query = { _id: ObjectId(id) };
+            const query = { _id: new ObjectId(id) };
             const order = await ordersCollection.findOne(query);
             res.send(order);
         });
+
+
 
         //Make a specific user to Admin
         app.put("/user/admin/:email", verifyJWT, async (req, res) => {

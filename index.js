@@ -199,6 +199,14 @@ async function run() {
             res.send(orders);
         });
 
+        //Delete a order from Db
+        app.delete("/orders/:id", verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const restOrders = await ordersCollection.deleteOne(filter);
+            res.send(restOrders);
+        });
+
         //Get All the orders for a Specific User
         app.get("/order", verifyJWT, async (req, res) => {
             //Requested Email

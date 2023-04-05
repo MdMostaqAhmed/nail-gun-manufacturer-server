@@ -103,6 +103,14 @@ async function run() {
             res.send(result);
         });
 
+        //Delete a Product from Db
+        app.delete("/products/:id", verifyJWT, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const restProducts = await productsCollection.deleteOne(filter);
+            res.send(restProducts);
+        });
+
 
 
         //Add a Order
@@ -135,16 +143,6 @@ async function run() {
                     .send({ message: "Forbidden Access! you aren't the right user" });
             }
         });
-
-
-        //Get All Orders From DB
-        app.get("/orders", async (req, res) => {
-            const query = {};
-            const cursor = ordersCollection.find(query);
-            const orders = await cursor.toArray();
-            res.send(orders);
-        });
-
 
 
         //Make a specific user to Admin
@@ -202,7 +200,7 @@ async function run() {
         //Delete a order from Db
         app.delete("/orders/:id", verifyJWT, async (req, res) => {
             const id = req.params.id;
-            const filter = { _id: ObjectId(id) };
+            const filter = { _id: new ObjectId(id) };
             const restOrders = await ordersCollection.deleteOne(filter);
             res.send(restOrders);
         });
@@ -309,12 +307,21 @@ async function run() {
 
 
 
-        //Delete a order from Db
-        app.delete("/orders/:id", verifyJWT, async (req, res) => {
+
+        //Update status after shipment
+
+        app.patch("/ship/:id", verifyJWT, async (req, res) => {
             const id = req.params.id;
+            const payment = req.body;
             const filter = { _id: new ObjectId(id) };
-            const restOrders = await ordersCollection.deleteOne(filter);
-            res.send(restOrders);
+            const updatedDoc = {
+                $set: {
+                    status: payment.status,
+                },
+            };
+            const result = await paymentCollection.insertOne(payment);
+            const updatedOrder = await ordersCollection.updateOne(filter, updatedDoc);
+            res.send(updatedDoc);
         });
 
         //Add a Review to DB
